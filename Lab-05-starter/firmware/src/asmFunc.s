@@ -67,17 +67,17 @@ asmFunc:
     /*** STUDENTS: Place your code BELOW this line!!! **************/
     
     /* REGISTER TRACKER FOR PROGRAMMER
-     * UNSPECIFIED REGISTERS ARE SCRATCH PAD
-     * R0 - recive dividend, output adres of quotiend if error
+     * UNSPECIFIED REGISTERS ARE SCRATCH PAD OR UNUSED
+     * R0 - recive dividend, output addres of quotient if error
      * R1 - recive divisor
      * R2 - dividend
      * R3 - divisor
      * R4 - quotient
      * R5 - mod
-     * R6 
+     * R6 - store number we divide by subtracting turned mod
      * R7 
-     * R8 
-     * R9 
+     * R8 - store value of divisor
+     * R9 - store our loop counter turned quotient
      * R10 - stores 0
      * R11 - stores 1
      * R12 - we_have_a_problem
@@ -91,58 +91,81 @@ asmFunc:
     LDR R12,=we_have_a_problem
     
     /* store our input values in our storage locations */
-    /* R0 is the input dividend so we store it there */
+    // R0 is the input dividend so we store it there 
     STR R0,[R2]
-    /* R1 is the input divisor so we store it there */
+    // R1 is the input divisor so we store it there 
     STR R1,[R3]
     
     /* store 0 in R10 and 1 in R11 just for ease */
     LDR R10,=0
     LDR R11,=1
     
-    /* set quotient to 0 */
+    // set quotient to 0 
     STR R10,[R4]
-    /* set mod to 0 */
+    // set mod to 0 
     STR R10,[R5]
-    /* set we_have_a_problem to 0 cause we have to at some point */
+    // set we_have_a_problem to 0 cause we have to at some point
     STR R10,[R12]
     
     /* check if either input value is 0
      * and if so it's an ERROR
      */
-    /* load R6 w/ the value of dividend */
+    // load R6 w/ the value of dividend 
     LDR R6,[R2]
-    /* comepare dividend to 0 */
+    // comepare dividend to 0 
     CMP R10,R6
-    /* if it's equal to 0, branch to error */
+    // if it's equal to 0, branch to error 
     BEQ error
-    /* load R7 w/ the vlaue of divisor */
-    LDR R7,[R3]
-    /* compare the divisor to 0 */
-    CMP R10,R7
-    /* if it's equal to 0, branch to error */
+ 
+    // load R8 w/ the vlaue of divisor 
+    LDR R8,[R3]
+    // compare the divisor to 0 
+    CMP R10,R8
+    // if it's equal to 0, branch to error 
     BEQ error
-   
-/* this is out loop for doing division by subtraction */
-division_by_subtraction:
-    /* division by subtraction */
-    
-    /* if we still need to keep going then we keep going */
-    
-    /* if we're done then we load the quotient into quotient 
-     * and mod into mod
-     */
-    
-    /* branch to done so we skip over the error branch */
-    B done
 
-/* this is our error branch for if we have an error */
+    // R6 is already storeing our value of dividend
+    // R8 is already storeing our value of the divisor
+    // set R9, which is our counter, to 0
+    LDR R9,=0
+
+/* our loop for dividing by subtracting 
+ * "working number" is how I refer to our number we are dividing by subtracting
+ * it is in R6
+ */ 
+div_by_sub_loop:
+    // compare our working number to our divisor
+    CMP R6,R8
+    // if our working number is smaller than our divisor, exit the loop
+    BLO exit_loop
+    // else...
+    
+    // subtract our divisor from our working number and update it
+    SUB R6,R6,R8
+    // increment our counter
+    ADD R9,R9,R11
+    // go back to the top of the loop
+    B div_by_sub_loop 
+    
+    
+/* for when we exit our loop */
+exit_loop:
+    // store our counter in our quotient
+    STR R9,[R4]
+    // store our remainder in our mod
+    STR R6,[R5]
+    // branch to always so we skip over error
+    B always
+   
+/* error branch for errors */
 error:
-    /* set we_have_a_problem to 1 */
+    // set we_have_a_problem to 1
     STR R11,[R12]
-    /* load R0 with the LOCATION (not value) or quotient */
-    LDR R0,R4
-    /* done is the next thing so we don't need to branch to to */
+    
+/* we always do this at the end before done which comes after */
+always:
+    // load R0 with the address of quotient
+    LDR R0,=quotient
     
     /*** STUDENTS: Place your code ABOVE this line!!! **************/
 
